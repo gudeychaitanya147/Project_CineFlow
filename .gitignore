@@ -1,3 +1,6 @@
-# Ignore Keys folder and its contents
 Keys/
 *.json
+
+*.mp4
+
+*.drawio
