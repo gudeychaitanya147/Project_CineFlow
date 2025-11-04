@@ -4,13 +4,19 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+import googleapiclient.http
+
+googleapiclient.http.DEFAULT_HTTP_TIMEOUT = 120
 
 def get_authenticated_drive_service(client_secret_file="client_secret.json", token_file="token_drive.pickle"):
     """
     Authenticate Google Drive API once (user-level OAuth, not service account).
     Automatically reuses stored credentials from token_drive.pickle.
     """
-    scopes = ["https://www.googleapis.com/auth/drive.file"]
+    scopes = [
+        "https://www.googleapis.com/auth/drive.readonly",  # For listing all files
+        "https://www.googleapis.com/auth/drive.file"      # For creating/uploading files
+    ]
     creds = None
 
     # Load token if exists
@@ -56,28 +62,44 @@ def upload_to_drive(drive, file_path, folder_id=None):
     return upload
 
 
-def list_drive_files(drive, max_results=10):
-    """
-    Lists recent files in your Google Drive.
-    """
-    results = (
-        drive.files()
-        .list(pageSize=max_results, fields="files(id, name, mimeType, webViewLink)")
-        .execute()
-    )
-    files = results.get("files", [])
+def list_drive_files(drive, folder_id=None, mime_type=None, order_by="name"):
+    query_parts = []
+    
+    # Build query
+    if folder_id:
+        query_parts.append(f"'{folder_id}' in parents")
+    if mime_type:
+        query_parts.append(f"mimeType = '{mime_type}'")
+    
+    query = " and ".join(query_parts) if query_parts else None
+    
+    files = []
+    page_token = None
+    
+    while True:
+        # Get files page by page
+        results = drive.files().list(
+            q=query,
+            orderBy=order_by,
+            pageSize=1000,  # Maximum allowed page size
+            fields="nextPageToken, files(id, name, mimeType, webViewLink, modifiedTime, size)",
+            pageToken=page_token
+        ).execute()
+        
+        batch = results.get("files", [])
+        files.extend(batch)
+        
+        # Get next page token
+        page_token = results.get("nextPageToken")
+        if not page_token:
+            break
+            
     if not files:
         print("No files found.")
         return []
+        
     for f in files:
-        print(f"{f['name']} ({f['mimeType']}) -> {f['webViewLink']}")
+        size_mb = float(f.get('size', 0)) / (1024 * 1024)
+        print(f"{f['name']} ({size_mb:.1f}MB) -> {f['webViewLink']}")
+        
     return files
-
-
-# Example usage
-if __name__ == "__main__":
-    drive = get_authenticated_drive_service('C:/Users/gudey/Documents/Github/Project_CineFlow/Keys/client_secret.json', 'C:/Users/gudey/Documents/Github/Project_CineFlow/Keys/token_drive.pickle')
-    # Upload example file
-    upload_to_drive(drive, "C:/Users/gudey/Downloads/video.mp4")
-    # List recent files
-    list_drive_files(drive)

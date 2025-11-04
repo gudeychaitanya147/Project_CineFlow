@@ -22,9 +22,3 @@ def merge_random_audio(video_path, audio_folder, output_path, volume=0.2):
 
     subprocess.run(cmd, check=True)
 
-# Example usage
-merge_random_audio(
-    video_path="C:/Users/gudey/Downloads/val.mp4",
-    audio_folder="C:/Users/gudey/Downloads/audio",
-    output_path="C:/Users/gudey/Downloads/video_with_bg.mp4",
-)

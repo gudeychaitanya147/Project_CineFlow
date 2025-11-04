@@ -60,20 +60,4 @@ def write_sheet(service, spreadsheet_id, range_name, values):
     print(f"{result.get('updatedCells')} cells updated.")
 
 
-if __name__ == "__main__":
-    # Example usage
-    SHEET_ID = "1ttrGdA9cTP5Qei8P2zp_d0klbUPLkIGiUbTfvsAWhSg"  # from URL
-    RANGE_NAME = "Input!A1:P5"
-
-    service = get_authenticated_service('C:/Users/gudey/Documents/Github/Project_CineFlow/Keys/client_secret.json', 'C:/Users/gudey/Documents/Github/Project_CineFlow/Keys/token_sheets.pickle')
-    list_sheets(service, SHEET_ID)
-    
-    data = read_sheet(service, SHEET_ID, RANGE_NAME)
-
-    print("Current Sheet Data:")
-    for row in data:
-        print(row)
-
-    # Example write
-    new_values = [["Project_Name", "Status"], ["ID", "Progress"]]
-    write_sheet(service, SHEET_ID, "Input!A1:B2", new_values)
+SHEET_ID = "1ttrGdA9cTP5Qei8P2zp_d0klbUPLkIGiUbTfvsAWhSg"
