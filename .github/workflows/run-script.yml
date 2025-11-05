@@ -23,10 +23,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Debug repo structure (optional)
+      - name: Create client secret file
         run: |
-          pwd
-          ls -R
+          echo "${{ secrets.GOOGLE_CLIENT_SECRET }}" > Keys/client_secret.json
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT }}" > Keys/service_account.json
+          echo "${{ secrets.BASIC_DATA }}" > Keys/basic_data.json
 
       - name: Run Python Script
         run: python Sample_Run.py
